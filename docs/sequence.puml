@@ -1,0 +1,38 @@
+@startuml
+
+title Sample Flow: Commanding the Radio via CAN Bus
+
+actor UpstreamDevice as "IMU or OBC"
+participant "CAN RX Task" as CanRx
+participant "Command Handler Task" as CmdHandler
+participant "LoRa Task" as LoraTask
+participant "LoRa Driver" as LoRa1280
+participant "SPI Bus" as SPI
+
+== CAN Message Reception ==
+UpstreamDevice -> CanRx : CAN frame (TX_CMD, image_id=1, freq=2.41GHz, time=18:00UTC, count=3, sf/bw/cr)
+
+== CAN RX Task Decodes Frame ==
+CanRx -> CmdHandler : Enqueue tx_command_t 
+
+== Command Handler Schedules Task ==
+CmdHandler -> LoraTask : xQueueSend(tx_command_t)
+
+== LoRa Task Handles Scheduled TX ==
+LoraTask -> LoraTask : Wait until 18:00 UTC
+loop 3 times
+    LoraTask -> LoRa1280 : configure(freq=2.41GHz, sf=12, bw=1.6MHz, cr=4/5)
+    LoRa1280 -> SPI : Write SX1280 registers
+    LoraTask -> LoRa1280 : transmit(image[1])
+    LoRa1280 -> SPI : Burst write payload
+    LoRa1280 -> SPI : Trigger SetTx
+    LoRa1280 -> LoraTask : IRQ TX_DONE
+end
+
+== Optional Ack ==
+LoraTask -> CmdHandler : TX_COMPLETE(status)
+CmdHandler -> CanRx : format CAN telemetry
+CanRx -> UpstreamDevice : CAN telemetry frame
+
+@enduml
+

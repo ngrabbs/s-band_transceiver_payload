@@ -1,0 +1,27 @@
+@startuml Mockingbird_Flow
+skinparam monochrome true
+skinparam defaultFontSize 12
+title Image Downlink Flow (S-Band, LoRa 1 Mbps)
+
+participant "CubeSat\nS-Band Patch\nAntenna" as Sat
+participant "3 m Dish\n(+ Rotator)" as Dish
+participant "LNA" as LNA
+participant "Cavity\nFilter" as Filter
+participant "HackRF\nSDR" as SDR
+participant "GNU Radio\nFlowgraph" as GNUR
+participant "LoRa\nDecoder" as Decoder
+participant "Image File\nWriter" as Writer
+participant "User\n/ Mission Ops" as User
+
+== Pass Begins ==
+Sat -> Dish : RF Image Packets\n(2.4 GHz LoRa)
+Dish -> LNA : coax
+LNA -> Filter : amplified RF
+Filter -> SDR : filtered RF
+SDR -> GNUR : IQ stream (USB)
+GNUR -> Decoder : demod bits
+Decoder -> Writer : *.jpg / *.png\n(≈ 3 MB)
+Writer -> User : Notify + store on disk
+== Pass Ends ==
+
+@enduml
