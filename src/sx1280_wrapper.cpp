@@ -7,6 +7,7 @@
 // Instantiate the SX1280 object with pins for NSS, RESET, BUSY, DIO1
 // You can change these if needed
 static SX1280 radio(5, 22, 26, 27);  // NSS, RESET, BUSY, DIO1
+static loRa_Para_t saved_params;
 
 extern "C" {
 
@@ -24,15 +25,15 @@ typedef struct {
 } lora_params_t;
 
 bool sx1280_init(const lora_params_t* params) {
-    loRa_Para_t cpp_params;
-    cpp_params.rf_freq     = params->rf_freq;
-    cpp_params.tx_power    = params->tx_power;
-    cpp_params.lora_sf     = params->lora_sf;
-    cpp_params.band_width  = params->band_width;
-    cpp_params.code_rate   = params->code_rate;
-    cpp_params.payload_size = params->payload_size;
+    loRa_Para_t saved_params;
+    saved_params.rf_freq     = params->rf_freq;
+    saved_params.tx_power    = params->tx_power;
+    saved_params.lora_sf     = params->lora_sf;
+    saved_params.band_width  = params->band_width;
+    saved_params.code_rate   = params->code_rate;
+    saved_params.payload_size = params->payload_size;
 
-    return radio.Init(&cpp_params);
+    return radio.Init(&saved_params);
 }
 
 void sx1280_tx(const char* msg, uint16_t len) {

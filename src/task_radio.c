@@ -1,7 +1,7 @@
 #include "task_radio.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "sx1280_wrapper.h"   // or your peripheral_lora1280.h
+#include "peripheral_lora1280.h"   // or your peripheral_lora1280.h
 #include <string.h>
 #include <stdio.h>
 
@@ -11,9 +11,11 @@
 static void radio_task(void *pvParameters) {
     const char *msg = "Cubesat@MSU TX Burst\n";
 
+    bool ok = lora1280_init();
+    printf("[LORA_INIT] sx1280_init returned: %s\n", ok ? "OK" : "FAIL");
+
     for (;;) {
-        sx1280_tx(msg, strlen(msg));
-        sx1280_wait_tx_done();
+        printf("transmit result %d\n", lora1280_transmit("testing 123"));
         printf("[Radio Task] TX complete\n");
 
         vTaskDelay(pdMS_TO_TICKS(10000));  // repeat every 10s

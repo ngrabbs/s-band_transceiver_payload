@@ -6,6 +6,8 @@
 
 int main() {
     stdio_init_all();
+    sleep_ms(5000);
+    printf("main.c done sleeping fire it up\n");
 
     init_spi();
 //    init_canbus();

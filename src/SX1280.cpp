@@ -82,7 +82,12 @@ void SX1280::Pin_Init(void)
 bool SX1280::Init(loRa_Para_t *lp_pt)
 {
 	lora_para_pt = lp_pt;
-	
+  printf("[SX1280.Init] rf=%lu sf=%u bw=%u cr=%u\n",
+  	lora_para_pt ->rf_freq,
+    lora_para_pt ->lora_sf,
+    lora_para_pt ->band_width,
+    lora_para_pt->code_rate);
+
 	Pin_Init();
 	SPI_Init();
 	
@@ -232,6 +237,7 @@ uint8_t SX1280::ReadRegister( uint16_t address )
 
 void SX1280::WriteBuffer(uint8_t offset, uint8_t *data, uint8_t length)
 {
+	printf("[SX1280.WriteBuffer] len=%d offset=%d data[0]=0x%02X\n", length, offset, data[0]);
     uint16_t i;
 	
 	CheckBusy();
@@ -308,6 +314,7 @@ periodBaseCount
 ***********************************************************************************/
 void SX1280::SetTx(uint8_t periodBase, uint16_t periodBaseCount)
 {
+	printf("[SX1280.SetTx] Triggering TX\n");
 	uint8_t buf[3];
 	
     buf[0] = periodBase;
@@ -568,11 +575,21 @@ void SX1280::SetSaveContext( void )
 
 void SX1280::TxPacket(uint8_t *payload,uint8_t size)
 {
+	printf("[SX1280 Driver.TxPacket] %s\n", payload);
 	SetStandby(STDBY_RC);//0:STDBY_RC; 1:STDBY_XOSC
 	SetBufferBaseAddress(0,0);//(TX_base_addr,RX_base_addr)
 
 	WriteBuffer(0,payload,size);//(offset,*data,length)
 	SetPacketParams(size);//PreambleLength;HeaderType;PayloadLength;CRCType;InvertIQ
+
+ // Log current modulation settings
+  printf("[SX1280.Modulation] freq=%lu Hz, sf=%u, bw=%u, cr=%u, size=%u\n",
+      lora_para_pt->rf_freq,
+      lora_para_pt->lora_sf,
+      lora_para_pt->band_width,
+      lora_para_pt->code_rate,
+      size
+  );
 
 	SetDioIrqParams(IRQ_TX_DONE);//TxDone IRQ
 	
@@ -669,8 +686,6 @@ void SX1280::SX1280_Config(void)
 	SetPacketParams(size_temp);
 	SetBufferBaseAddress( 0x00, 0x00 );
 }
-
-
 
 
 

@@ -21,6 +21,8 @@ add_executable(${ProjectName}
     src/main.c
     src/init_tasks.c
     src/task_radio.c
+    src/bus_config.c
+    src/peripheral_lora1280.c
     src/SX1280.cpp
 	src/sx1280_wrapper.cpp
 )
