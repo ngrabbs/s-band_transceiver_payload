@@ -107,5 +107,5 @@ Designed for **maximum modularity** — this payload can go in *any CubeSat* tha
 
 ## 👨‍🚀 Author
 **Nick Grabbs**  
-Project lead, CubeSat@MSU  
+GNC, CubeSat@MSU  
 June 2025
