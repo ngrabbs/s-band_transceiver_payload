@@ -15,10 +15,10 @@ static void radio_task(void *pvParameters) {
     printf("[LORA_INIT] sx1280_init returned: %s\n", ok ? "OK" : "FAIL");
 
     for (;;) {
-        printf("transmit result %d\n", lora1280_transmit("testing 123"));
+        printf("transmit result %d\n", lora1280_transmit(msg));
         printf("[Radio Task] TX complete\n");
 
-        vTaskDelay(pdMS_TO_TICKS(10000));  // repeat every 10s
+        vTaskDelay(pdMS_TO_TICKS(1000));  // repeat every 10s
     }
 }
 

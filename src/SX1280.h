@@ -326,7 +326,6 @@ private:
 	uint8_t SPI_MOSI;
 	uint8_t SPI_MISO;
 	
-	
 };
 
 #endif

@@ -6,11 +6,11 @@
 
 bool lora1280_init(void) {
     lora_params_t params = {
-        .rf_freq = 2250000000,
-        .tx_power = 13,
-        .lora_sf = 12,
-        .band_width = LORA_BW_1600,
-        .code_rate = 1,
+        .rf_freq = 2250050000,
+        .tx_power = 0,
+        .lora_sf = 0x70, // sf 7
+        .band_width = 0x34, // 0200 bandwidth
+        .code_rate = 0x01, // cr 4/5
         .payload_size = 64
     };
     return sx1280_init(&params);
