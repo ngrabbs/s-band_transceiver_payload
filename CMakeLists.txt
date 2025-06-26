@@ -19,12 +19,18 @@ pico_sdk_init()
 # Define executable
 add_executable(${ProjectName}
     src/main.c
+    src/config.c
     src/init_tasks.c
     src/task_radio.c
     src/task_can.c
+    src/task_housekeeping.c
+    src/message_queue.c
     src/bus_config.c
+    src/housekeeping.c
     src/peripheral_lora1280.c
     src/peripheral_mcp2515.c
+    src/protocol_rf_command.c
+    src/protocol_spacecan.c
     src/SX1280.cpp
 	src/sx1280_wrapper.cpp
 )
@@ -37,7 +43,13 @@ pico_enable_stdio_uart(${ProjectName} 0)
 target_include_directories(${ProjectName} PRIVATE src)
 
 # Link libraries
-target_link_libraries(${ProjectName} pico_stdlib hardware_spi FreeRTOS-Kernel-Heap4)
+target_link_libraries(
+    ${ProjectName}
+    pico_stdlib
+    hardware_spi
+    FreeRTOS-Kernel-Heap4
+    hardware_adc
+    )
 
 # Optional: Disable picotool if not needed
 set(PICO_NO_FLASH 0)
