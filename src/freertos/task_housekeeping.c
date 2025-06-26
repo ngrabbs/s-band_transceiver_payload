@@ -3,11 +3,11 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "pico/stdlib.h"
-#include "task_housekeeping.h"
-#include "housekeeping.h"
-#include "protocol_spacecan.h"
-#include "config.h"
-#include "message_queue.h"
+#include "freertos/task_housekeeping.h"
+#include "subsystems/housekeeping/housekeeping.h"
+#include "protocols/protocol_spacecan.h"
+#include "core/config.h"
+#include "core/message_queue.h"
 #include <string.h>
 
 void housekeeping_task(void *params) {

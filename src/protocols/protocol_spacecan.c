@@ -1,5 +1,5 @@
 // protocol_spacecan.c
-#include "protocol_spacecan.h"
+#include "protocols/protocol_spacecan.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>

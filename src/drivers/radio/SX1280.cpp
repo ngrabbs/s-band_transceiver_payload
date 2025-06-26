@@ -21,7 +21,7 @@
 *	The configuration of both the modules should be the same.
 *********************************************************************************************/
 #include <stdio.h>
-#include <SX1280.h>
+#include "SX1280.h"
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
 

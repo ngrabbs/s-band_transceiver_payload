@@ -1,6 +1,6 @@
 #include "FreeRTOS.h"
 #include "queue.h"
-#include "message_queue.h"
+#include "core/message_queue.h"
 #include <stdio.h>
 
 QueueHandle_t radio_queue;

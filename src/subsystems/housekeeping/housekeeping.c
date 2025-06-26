@@ -1,6 +1,6 @@
 // housekeeping.c - Provides basic system telemetry for CubeSat
 
-#include "housekeeping.h"
+#include "subsystems/housekeeping/housekeeping.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "hardware/adc.h"

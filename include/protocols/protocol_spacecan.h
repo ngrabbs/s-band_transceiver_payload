@@ -2,7 +2,7 @@
 #ifndef PROTOCOL_SPACECAN_H
 #define PROTOCOL_SPACECAN_H
 
-#include "housekeeping.h"
+#include "subsystems/housekeeping/housekeeping.h"
 #include <stdint.h>
 #include <stddef.h>
 

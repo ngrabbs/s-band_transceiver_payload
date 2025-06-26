@@ -1,5 +1,5 @@
 // peripheral_mcp2515.c - SPI driver for MCP2515 CAN controller
-#include "peripheral_mcp2515.h"
+#include "drivers/can/peripheral_mcp2515.h"
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
 #include <stdio.h>

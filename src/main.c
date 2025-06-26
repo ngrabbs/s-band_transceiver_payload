@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
-#include "init_tasks.h"
-#include "bus_config.h"
-#include "message_queue.h"
-#include "config.h"
+#include "freertos/init_tasks.h"
+#include "drivers/spi/bus_config.h"
+#include "core/message_queue.h"
+#include "core/config.h"
 
 int main() {
     stdio_init_all();

@@ -21,29 +21,50 @@ This project implements a modular FreeRTOS-based firmware for an RP2040-based Cu
 ## 🧱 Project Folder Structure
 
 ```
-src/
-├── main.c                    # Entry point, initializes bus and tasks
-├── init_tasks.c/h            # Calls launch_*_task() functions
-├── bus_config.c/h            # SPI setup shared by all SPI devices
-
-# Tasks (FreeRTOS)
-├── task_radio.c/h            # Sends packets via SX1280 LoRa
-├── task_can.c/h              # Receives/sends CAN messages
-├── task_housekeeping.c/h     # Logs telemetry or internal status
-
-# Peripheral Drivers
-├── peripheral_lora1280.c/h   # C-style API to SX1280
-├── peripheral_flash_spi.c/h  # (planned) External SPI flash storage
-├── peripheral_mcp2515.c/h    # (planned) CAN transceiver driver
-
-# Protocol Parsing / Abstraction
-├── protocol_rf_command.c/h   # (planned) Handles high-level TX commands
-├── protocol_spacecan.c/h     # (planned) Encodes/decodes SpaceCAN or CubeSat-specific protocols
-
-# LoRa Driver Wrapping
-├── SX1280.cpp/h              # Original C++ driver from NiceRF
-├── sx1280_wrapper.cpp/h      # C-callable interface to SX1280 driver
+s-band_transceiver_payload/
+├── CMakeLists.txt
+├── include/                     # Public headers (available across modules)
+│   ├── core/
+│   ├── drivers/
+│   ├── freertos/
+│   ├── protocols/
+│   ├── subsystems/
+├── src/
+│   ├── main.c                   # Entry point
+│   ├── core/                    # Core services like config and messaging
+│   │   ├── config.c
+│   │   ├── message_queue.c
+│   ├── freertos/                # Task definitions
+│   │   ├── init_tasks.c
+│   │   ├── task_can.c
+│   │   ├── task_radio.c
+│   │   ├── task_housekeeping.c
+│   ├── drivers/                 # Low-level hardware interfaces
+│   │   ├── spi/
+│   │   ├── can/
+│   │   ├── radio/
+│   ├── subsystems/             # Subsystems like housekeeping, EPS, etc.
+│   │   ├── housekeeping/
+│   ├── protocols/              # Protocol-specific formatting and handlers
+│   │   ├── protocol_rf_command.c
+│   │   ├── protocol_spacecan.c
+├── lib/                         # Third-party libraries (e.g. FreeRTOS)
 ```
+## 📁 Header Layout
+
+Public headers are now located in `include/`, separated from source files for clarity:
+
+```
+├── include/                     # Public headers (available across modules)
+│   ├── core/
+│   ├── drivers/
+│   ├── freertos/
+│   ├── protocols/
+│   ├── subsystems/
+```
+
+These headers expose the task interfaces and peripheral APIs to `main.c` and other core logic.
+
 
 ---
 
@@ -55,12 +76,14 @@ src/
 - Access C++ from C via `sx1280_wrapper.[cpp/h]`
 
 ### Layering
-| Layer      | Example                      | Notes                                   |
-|------------|------------------------------|-----------------------------------------|
-| Task       | `task_radio.c`               | Runs `xQueueReceive`, calls drivers     |
-| Peripheral | `peripheral_lora1280.c`      | Abstracts access to the radio           |
-| Wrapper    | `sx1280_wrapper.cpp`         | Calls C++ driver via extern "C"         |
-| Driver     | `SX1280.cpp`                 | Vendor code, untouched if possible      |
+| Layer      | Example                               | Notes                                   |
+|------------|---------------------------------------|-----------------------------------------|
+| Task       | `freertos/task_radio.c`               | Runs `xQueueReceive`, calls drivers     |
+| Peripheral | `drivers/radio/peripheral_lora1280.c` | Abstracts access to the radio           |
+| Wrapper    | `drivers/radio/sx1280_wrapper.cpp`    | Calls C++ driver via extern "C"         |
+| Driver     | `drivers/radio/SX1280.cpp`            | Vendor code, untouched if possible      |
+| Config     | `core/config.c`                       | System config used across tasks         |
+| Messaging  | `core/message_queue.c`                | Queues to pass data between tasks       |
 
 ### SPI Handling
 - `init_spi()` in `bus_config.c` sets up SPI0 once
@@ -88,9 +111,14 @@ src/
 - [x] FreeRTOS setup and scheduler booting
 - [x] SX1280 radio wrapped and transmitting
 - [x] SPI shared bus config
-- [ ] CAN driver integration
-- [ ] Protocol parsing (SpaceCAN or custom)
-- [ ] Housekeeping/telemetry task
+- [x] CAN driver integration
+- [x] Protocol parsing (SpaceCAN or custom)
+- [x] Housekeeping/telemetry task
+- [x] Inter-task message queue (FreeRTOS)
+
+- [ ] CAN RX parsing and SpaceCAN injection
+- [ ] Command decode / control via CAN or RF
+- [ ] SPI flash or image buffer
 
 ---
 

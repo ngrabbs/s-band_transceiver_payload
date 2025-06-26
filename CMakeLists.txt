@@ -19,20 +19,20 @@ pico_sdk_init()
 # Define executable
 add_executable(${ProjectName}
     src/main.c
-    src/config.c
-    src/init_tasks.c
-    src/task_radio.c
-    src/task_can.c
-    src/task_housekeeping.c
-    src/message_queue.c
-    src/bus_config.c
-    src/housekeeping.c
-    src/peripheral_lora1280.c
-    src/peripheral_mcp2515.c
-    src/protocol_rf_command.c
-    src/protocol_spacecan.c
-    src/SX1280.cpp
-	src/sx1280_wrapper.cpp
+    src/core/config.c
+    src/core/message_queue.c
+    src/freertos/init_tasks.c
+    src/freertos/task_radio.c
+    src/freertos/task_can.c
+    src/freertos/task_housekeeping.c
+    src/drivers/spi/bus_config.c
+    src/drivers/radio/peripheral_lora1280.c
+    src/drivers/radio/sx1280_wrapper.cpp
+    src/drivers/radio/SX1280.cpp
+    src/drivers/can/peripheral_mcp2515.c
+    src/subsystems/housekeeping/housekeeping.c
+    src/protocols/protocol_rf_command.c
+    src/protocols/protocol_spacecan.c
 )
 
 # Enable USB serial (set to 1 to enable)
@@ -40,7 +40,10 @@ pico_enable_stdio_usb(${ProjectName} 1)
 pico_enable_stdio_uart(${ProjectName} 0)
 
 # Add include paths
-target_include_directories(${ProjectName} PRIVATE src)
+target_include_directories(${ProjectName}
+    PRIVATE src
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 # Link libraries
 target_link_libraries(

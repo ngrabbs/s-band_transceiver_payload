@@ -2,7 +2,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "pico/stdlib.h"
-#include "peripheral_mcp2515.h"
+#include "drivers/can/peripheral_mcp2515.h"
 #include "hardware/spi.h"
 #include <stdio.h>
 

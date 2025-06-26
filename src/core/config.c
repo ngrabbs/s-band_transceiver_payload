@@ -1,5 +1,5 @@
 // config.c
-#include "config.h"
+#include "core/config.h"
 
 system_config_t sys_config;
 

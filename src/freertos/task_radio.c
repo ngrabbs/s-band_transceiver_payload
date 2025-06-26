@@ -1,11 +1,11 @@
-#include "task_radio.h"
+#include "freertos/task_radio.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "peripheral_lora1280.h"   // or your peripheral_lora1280.h
+#include "drivers/radio/peripheral_lora1280.h"   // or your peripheral_lora1280.h
 #include <string.h>
 #include <stdio.h>
-#include <config.h>
-#include "message_queue.h"
+#include "core/config.h"
+#include "core/message_queue.h"
 
 #define RADIO_TASK_STACK_SIZE 512
 #define RADIO_TASK_PRIORITY   (tskIDLE_PRIORITY + 2)
