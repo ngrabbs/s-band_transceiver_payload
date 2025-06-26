@@ -33,7 +33,7 @@ void mcp2515_write_register(uint8_t address, uint8_t value) {
 }
 
 void mcp2515_reset() {
-    uint8_t cmd = 0xC0;
+    uint8_t cmd = 0xC0; // comes from mcp2515 data sheet table 12-1
     mcp2515_select();
     spi_write_blocking(MCP2515_SPI, &cmd, 1);
     mcp2515_deselect();
@@ -72,17 +72,26 @@ bool mcp2515_configure_8mhz_500k(void) {
 bool mcp2515_configure_8mhz_250k(void) {
     mcp2515_reset();
 
+    gpio_init(MCP2515_CS_PIN);
+	gpio_set_dir(MCP2515_CS_PIN, GPIO_OUT);
+	gpio_put(MCP2515_CS_PIN, 1);
+
     // CNF1, CNF2, CNF3 for 8 MHz oscillator and 250 kbps bitrate
     // Based on Microchip MCP2515 datasheet bit timing calculator
     // TQ = 2us, 16 TQ per bit = 2us * 16 = 250kbps
 
-    mcp2515_write_register(0x2A, 0x01); // CNF1: SJW=1TQ, BRP=1
-    mcp2515_write_register(0x29, 0xB8); // CNF2: BTLMODE=1, PHSEG1=6, PRSEG=2
+    mcp2515_write_register(0x2A, 0x00); // CNF1: SJW=1TQ, BRP=1
+    mcp2515_write_register(0x29, 0x90 | (6 << 3) | 3); // CNF2: BTLMODE=1, PHSEG1=6, PRSEG=2
     mcp2515_write_register(0x28, 0x05); // CNF3: PHSEG2=6
+
+    uint8_t stat = mcp2515_read_register(0x0E);
+    printf("CANSTAT: 0x%02X (OPMODE = 0x%02X)\n", stat, stat & 0xE0);
 
     mcp2515_write_register(0x0F, 0x00); // CANCTRL: Normal mode
 
-    uint8_t stat = mcp2515_read_register(0x0E);
+    stat = mcp2515_read_register(0x0E);
+    printf("CANSTAT: 0x%02X (OPMODE = 0x%02X)\n", stat, stat & 0xE0);
+
     if ((stat & 0xE0) == 0x00) {
         printf("[MCP2515] Configured for 250kbps with 8MHz crystal\n");
         return true;

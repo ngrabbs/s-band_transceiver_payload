@@ -21,33 +21,53 @@ void can_task(void *params) {
     printf("[CAN TASK] MCP2515 ready, entering loop...\n");
 
     while (1) {
-        // Read RX status
-        printf("[CAN TASK] Checking for CAN\n");
-        mcp2515_select();
-        uint8_t cmd = 0xB0; // RX Status command
-        uint8_t rx_buf[2];
-        spi_write_read_blocking(MCP2515_SPI, &cmd, rx_buf, 2);
-        mcp2515_deselect();
+        // Dump CANINTF
+        uint8_t canintf = mcp2515_read_register(0x2C);
+        printf("[CAN TASK] CANINTF = 0x%02X\n", canintf);
 
-        uint8_t rx_status = rx_buf[1];
-        if (rx_status & 0xC0) { // Check RXB0 or RXB1 has data
-            printf("[CAN TASK] Frame available! RX_STATUS=0x%02X\n", rx_status);
+        // Dump CANSTAT
+        uint8_t canstat = mcp2515_read_register(0x0E);
+        printf("[CAN TASK] CANSTAT = 0x%02X (OPMODE = 0x%02X)\n", canstat, canstat & 0xE0);
 
-            // Read RXB0 (0x90 is Read RXB0 command)
+        // Check RXB0
+        if (canintf & 0x01) {
+            printf("[CAN TASK] RXB0 has a message\n");
             mcp2515_select();
-            uint8_t rxb0_cmd = 0x90;
-            uint8_t buffer[14] = {0};
-            spi_write_read_blocking(spi0, &rxb0_cmd, buffer, sizeof(buffer));
+            uint8_t cmd = 0x90;
+            uint8_t buf[14] = {0};
+            spi_write_read_blocking(MCP2515_SPI, &cmd, buf, sizeof(buf));
             mcp2515_deselect();
 
-            printf("[CAN TASK] Raw Frame: ");
-            for (int i = 1; i < sizeof(buffer); ++i) {
-                printf("%02X ", buffer[i]);
+            printf("[CAN TASK] RXB0 Frame: ");
+            for (int i = 1; i < sizeof(buf); ++i) {
+                printf("%02X ", buf[i]);
             }
             printf("\n");
+
+            // Clear RX0IF
+            mcp2515_write_register(0x2C, canintf & ~(0x01));
         }
 
-        vTaskDelay(pdMS_TO_TICKS(200));
+        // Check RXB1
+        if (canintf & 0x02) {
+            printf("[CAN TASK] RXB1 has a message\n");
+            mcp2515_select();
+            uint8_t cmd = 0x94;
+            uint8_t buf[14] = {0};
+            spi_write_read_blocking(MCP2515_SPI, &cmd, buf, sizeof(buf));
+            mcp2515_deselect();
+
+            printf("[CAN TASK] RXB1 Frame: ");
+            for (int i = 1; i < sizeof(buf); ++i) {
+                printf("%02X ", buf[i]);
+            }
+            printf("\n");
+
+            // Clear RX1IF
+            mcp2515_write_register(0x2C, canintf & ~(0x02));
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
@@ -55,7 +75,7 @@ void launch_can_task(void) {
     xTaskCreate(
         can_task,
         "CAN Task",
-        512,
+        1024,
         NULL,
         tskIDLE_PRIORITY + 1,
         NULL
