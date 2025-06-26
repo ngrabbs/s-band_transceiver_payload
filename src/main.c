@@ -5,7 +5,7 @@
 #include "freertos/init_tasks.h"
 #include "drivers/spi/bus_config.h"
 #include "core/message_queue.h"
-#include "core/config.h"
+#include "config.h"
 
 int main() {
     stdio_init_all();

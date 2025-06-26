@@ -3,19 +3,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "config.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct {
-    uint32_t rf_freq;
-    int8_t   tx_power;
-    uint8_t  lora_sf;
-    uint8_t  band_width;
-    uint8_t  code_rate;
-    uint8_t  payload_size;
-} lora_params_t;
 
 /**
  * Initialize the SX1280 radio with the specified parameters.

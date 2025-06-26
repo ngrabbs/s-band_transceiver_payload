@@ -18,8 +18,8 @@ pico_sdk_init()
 
 # Define executable
 add_executable(${ProjectName}
+    config/config.c
     src/main.c
-    src/core/config.c
     src/core/message_queue.c
     src/freertos/init_tasks.c
     src/freertos/task_radio.c
@@ -42,6 +42,7 @@ pico_enable_stdio_uart(${ProjectName} 0)
 # Add include paths
 target_include_directories(${ProjectName}
     PRIVATE src
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/config
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 

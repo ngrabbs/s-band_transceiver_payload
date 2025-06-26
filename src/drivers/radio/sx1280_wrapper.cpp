@@ -3,10 +3,12 @@
 
 #include "SX1280.h"
 #include <cstring>
+#include "config.h"
 
 // Instantiate the SX1280 object with pins for NSS, RESET, BUSY, DIO1
 // You can change these if needed
-static SX1280 radio(5, 22, 26, 27);  // NSS, RESET, BUSY, DIO1
+//static SX1280 radio(5, 22, 26, 27);  // NSS, RESET, BUSY, DIO1
+static SX1280 radio(pin_config.cs_lora, pin_config.lora_reset, pin_config.lora_busy, pin_config.lora_dio1);  // NSS, RESET, BUSY, DIO1
 static loRa_Para_t saved_params;
 
 extern "C" {
@@ -14,15 +16,6 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-// C-style structure matching the LoRa parameters
-typedef struct {
-    uint32_t rf_freq;
-    int8_t tx_power;
-    uint8_t lora_sf;
-    uint8_t band_width;
-    uint8_t code_rate;
-    uint8_t payload_size;
-} lora_params_t;
 
 bool sx1280_init(const lora_params_t* params) {
     loRa_Para_t saved_params;

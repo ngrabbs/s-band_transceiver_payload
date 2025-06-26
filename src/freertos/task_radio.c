@@ -4,8 +4,8 @@
 #include "drivers/radio/peripheral_lora1280.h"   // or your peripheral_lora1280.h
 #include <string.h>
 #include <stdio.h>
-#include "core/config.h"
 #include "core/message_queue.h"
+#include "config.h"
 
 #define RADIO_TASK_STACK_SIZE 512
 #define RADIO_TASK_PRIORITY   (tskIDLE_PRIORITY + 2)

@@ -4,9 +4,10 @@
 #include "pico/stdlib.h"
 #include <stdio.h>
 #include <string.h>
+#include "config.h"
 
-#define MCP2515_SPI       spi0
-#define MCP2515_CS_PIN    6
+#define MCP2515_SPI       pin_config.spi_bus
+#define MCP2515_CS_PIN    pin_config.cs_can
 
 void mcp2515_select() {
     gpio_put(MCP2515_CS_PIN, 0);

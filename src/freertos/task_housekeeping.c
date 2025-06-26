@@ -6,9 +6,9 @@
 #include "freertos/task_housekeeping.h"
 #include "subsystems/housekeeping/housekeeping.h"
 #include "protocols/protocol_spacecan.h"
-#include "core/config.h"
 #include "core/message_queue.h"
 #include <string.h>
+#include "config.h"
 
 void housekeeping_task(void *params) {
     printf("[HOUSEKEEPING] Starting housekeeping task...\n");
