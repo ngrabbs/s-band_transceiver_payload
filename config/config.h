@@ -27,14 +27,18 @@ extern sys_config_t sys_config;
 // === Pin Configuration ===
 typedef struct {
     // SPI Bus and Chip Select
-    spi_inst_t *spi_bus;
+    spi_inst_t *spi_bus0;
+    spi_inst_t *spi_bus1;
     uint32_t cs_lora;
     uint32_t cs_can;
 
     // SPI pins
-    uint32_t spi_sck;
-    uint32_t spi_mosi;
-    uint32_t spi_miso;
+    uint32_t spi_sck0;
+    uint32_t spi_mosi0;
+    uint32_t spi_miso0;
+    uint32_t spi_sck1;
+    uint32_t spi_mosi1;
+    uint32_t spi_miso1;
 
     // LoRa specific
     uint32_t lora_reset;
@@ -44,6 +48,10 @@ typedef struct {
     // I2C
     uint32_t i2c_sda;
     uint32_t i2c_scl;
+
+    // can config
+    uint32_t rst_can;
+    uint32_t int_can;
 
 } pin_config_t;
 

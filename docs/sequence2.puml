@@ -1,0 +1,25 @@
+@startuml ULL_Test_Sequence
+
+participant "Ground Station Console" as GSC
+participant "Ground Station CAN Interface" as GSI
+participant "ULL Payload RP2040" as RP
+participant "LoRa Radio (SX1280)" as LR
+participant "SDR Waterfall" as SDR
+
+GSC -> GSI : Send CAN Frame\n(e.g. RUN TEST 1 with params)
+GSI -> RP : Transmit CAN Frame (1 Mbps)
+RP -> RP : Parse CAN Command
+alt Command triggers data transmission
+    RP -> RP : Retrieve data from SPI Flash\n(e.g. Image.bin)
+end
+RP -> LR : Send data to LoRa radio
+LR -> SDR : Transmit RF Signal (2.4 GHz)
+SDR -> GSC : Display signal on waterfall\n(optionally demodulate later)
+note right of GSC
+    Capture debug logs:
+    - CAN traffic
+    - RP2040 debug prints
+    - SDR screenshots
+end note
+
+@enduml

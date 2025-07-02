@@ -24,51 +24,31 @@
 #include "SX1280.h"
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
+#include "config.h"
 
 #define SPI_NSS_LOW()  gpio_put(SPI_NSS, 0)
 #define SPI_NSS_HIGH() gpio_put(SPI_NSS, 1)
 
+#define SPI_NSS pin_config.cs_lora
+#define RF_NRESET pin_config.lora_reset
+#define RF_BUSY pin_config.lora_busy
+#define RF_DIO1 pin_config.lora_dio1
 /*
 The TCXO is 32MHz, so the frequency step should be FREQ_STEP = 52e6 / (2^18) Hz
 */
 #define FREQ_STEP    198.364
 
-static loRa_Para_t *lora_para_pt;	//pointer to hold lora parameter from app layer
-static spi_inst_t* radio_spi = spi0; // or spi1 if you're using that
+static spi_inst_t *radio_spi = spi0; // or spi1 if you're using that
 
-SX1280::SX1280(uint8_t NSS_Pin, uint8_t NRESET_Pin,uint8_t BUSY_Pin,uint8_t DIO1_Pin, uint8_t PIN_SCK, uint8_t PIN_MOSI, uint8_t PIN_MISO)
-{
-	SPI_NSS = NSS_Pin;
-	SPI_SCK = PIN_SCK;
-	SPI_MOSI = PIN_MOSI;
-	SPI_MISO = PIN_MISO;
-	RF_NRESET = NRESET_Pin;
-	RF_BUSY = BUSY_Pin;
-	RF_DIO1 = DIO1_Pin;
-
-	
-	lora_para_pt->rf_freq;
-	lora_para_pt->tx_power;
-	lora_para_pt->lora_sf;
-	lora_para_pt->band_width;
-	lora_para_pt->code_rate;
-	lora_para_pt->payload_size;
-}
-
-void SX1280::SPI_Init(void)
-{
-	spi_init(radio_spi, 1000 * 1000);
-	
-	gpio_init(SPI_NSS);
-	gpio_set_dir(SPI_NSS, GPIO_OUT);
-	gpio_put(SPI_NSS, 1);
-	gpio_set_function(SPI_SCK, GPIO_FUNC_SPI); // SCK
-	gpio_set_function(SPI_MOSI, GPIO_FUNC_SPI); // MOSI
-	gpio_set_function(SPI_MISO, GPIO_FUNC_SPI); // MISO
-}
+SX1280::SX1280(){}
 
 void SX1280::Pin_Init(void)
 {
+
+	gpio_init(SPI_NSS);
+	gpio_set_dir(SPI_NSS, GPIO_OUT);
+	gpio_put(SPI_NSS, 1);
+	
 	gpio_init(RF_NRESET);
 	gpio_set_dir(RF_NRESET, GPIO_OUT);
 	gpio_put(RF_NRESET, 0);
@@ -79,12 +59,9 @@ void SX1280::Pin_Init(void)
 	gpio_set_dir(RF_DIO1, GPIO_IN);
 }
 
-bool SX1280::Init(loRa_Para_t *lp_pt)
+bool SX1280::Init()
 {
-	lora_para_pt = lp_pt;
-	
 	Pin_Init();
-	SPI_Init();
 	
 	Reset_SX1280();	// reset LoRa chip
 	SX1280_Config();// Set RF parameter,like frequency,data rate etc
@@ -650,12 +627,12 @@ void SX1280::SX1280_Config(void)
 	uint8_t cr_temp;
 	uint8_t size_temp;
 	
-	rf_freq_temp = lora_para_pt->rf_freq;
-	power_temp = lora_para_pt->tx_power;
-	sf_temp = lora_para_pt->lora_sf;
-	bw_temp = lora_para_pt->band_width;
-	cr_temp = lora_para_pt->code_rate;
-	size_temp = lora_para_pt->payload_size;
+	rf_freq_temp = lora_config.rf_freq;
+	power_temp = lora_config.tx_power;
+	sf_temp = lora_config.lora_sf;
+	bw_temp = lora_config.band_width;
+	cr_temp = lora_config.code_rate;
+	size_temp = lora_config.payload_size;
 	
 	SetRegulatorMode(USE_LDO);
 	SetStandby(STDBY_RC);//0:STDBY_RC; 1:STDBY_XOSC

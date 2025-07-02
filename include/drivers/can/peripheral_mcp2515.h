@@ -3,17 +3,23 @@
 #define PERIPHERAL_MCP2515_H
 
 #include <stdint.h>
-#include <stdbool.h>
+#include "config.h"
 
-// Register access
-void mcp2515_select(void);
-void mcp2515_deselect(void);
-uint8_t mcp2515_read_register(uint8_t address);
-void mcp2515_write_register(uint8_t address, uint8_t value);
-void mcp2515_reset(void);
+#define MCP2515_CS pin_config.cs_can
+#define SPI_PORT1 pin_config.spi_bus1
+#define SPI_BAUDRATE 1000000
+#define PIN_SCK pin_config.spi_sck1
+#define PIN_MOSI pin_config.spi_mosi1
+#define PIN_MISO pin_config.spi_miso1
 
-// Initialization for 8MHz crystal and 500 kbps CAN
-bool mcp2515_configure_8mhz_500k(void);
-bool mcp2515_configure_8mhz_250k(void);
+typedef struct {
+    uint32_t id;
+    uint8_t dlc;
+    uint8_t data[8];
+} can_frame_t;
+
+int can_init(void);
+void can_send(const can_frame_t* frame);
+bool can_receive(can_frame_t* frame);
 
 #endif // PERIPHERAL_MCP2515_H

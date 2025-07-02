@@ -3,10 +3,15 @@
 
 #include "config.h"
 
-#define SPI_BUS       pin_config.spi_bus
-#define SPI_SCK_PIN   pin_config.spi_sck
-#define SPI_MOSI_PIN  pin_config.spi_mosi
-#define SPI_MISO_PIN  pin_config.spi_miso
+#define SPI_BUS0       pin_config.spi_bus0
+#define SPI_SCK_PIN0   pin_config.spi_sck0
+#define SPI_MOSI_PIN0  pin_config.spi_mosi0
+#define SPI_MISO_PIN0  pin_config.spi_miso0
+
+#define SPI_BUS1       pin_config.spi_bus0
+#define SPI_SCK_PIN1   pin_config.spi_sck0
+#define SPI_MOSI_PIN1  pin_config.spi_mosi0
+#define SPI_MISO_PIN1  pin_config.spi_miso0
 
 void init_spi(void);
 

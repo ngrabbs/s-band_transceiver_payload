@@ -1,0 +1,21 @@
+@startuml ULL_Logical_Block
+
+!define RECTANGLE class
+
+RECTANGLE GroundStation {
+    CAN Bus Interface
+    Command Console
+    SDR Receiver (CaribouLite / HackRF)
+}
+
+RECTANGLE ULL_Payload {
+    RP2040 MCU
+    CAN Bus Interface
+    SPI Flash Storage
+    LoRa1280F27-TCXO Module
+}
+
+GroundStation --> ULL_Payload : CAN Commands (1 Mbps)
+ULL_Payload --> GroundStation : RF Transmission (2.4 GHz)
+
+@enduml

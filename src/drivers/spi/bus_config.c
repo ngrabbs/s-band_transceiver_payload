@@ -4,9 +4,15 @@
 #include <stdio.h>
 
 void init_spi() {
-    printf("[SPI_INIT] setting up spi\n");
-    spi_init(SPI_BUS, 1000000);
-    gpio_set_function(SPI_SCK_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(SPI_MOSI_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(SPI_MISO_PIN, GPIO_FUNC_SPI);
+    printf("[SPI_INIT] setting up spi0\n");
+    spi_init(SPI_BUS0, 1000000);
+    gpio_set_function(SPI_SCK_PIN0, GPIO_FUNC_SPI);
+    gpio_set_function(SPI_MOSI_PIN0, GPIO_FUNC_SPI);
+    gpio_set_function(SPI_MISO_PIN0, GPIO_FUNC_SPI);
+
+    printf("[SPI_INIT] setting up spi1\n");
+    spi_init(SPI_BUS1, 1000000);
+    gpio_set_function(SPI_SCK_PIN1, GPIO_FUNC_SPI);
+    gpio_set_function(SPI_MOSI_PIN1, GPIO_FUNC_SPI);
+    gpio_set_function(SPI_MISO_PIN1, GPIO_FUNC_SPI);
 }

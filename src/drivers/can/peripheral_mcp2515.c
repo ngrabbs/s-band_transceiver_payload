@@ -1,103 +1,186 @@
-// peripheral_mcp2515.c - SPI driver for MCP2515 CAN controller
-#include "drivers/can/peripheral_mcp2515.h"
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
+#include "mcp2515_regs.h"
+#include "drivers/can/peripheral_mcp2515.h"
+#include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
-#include "config.h"
 
-#define MCP2515_SPI       pin_config.spi_bus
-#define MCP2515_CS_PIN    pin_config.cs_can
-
-void mcp2515_select() {
-    gpio_put(MCP2515_CS_PIN, 0);
+static inline void cs_select() {
+    gpio_put(MCP2515_CS, 0);
 }
 
-void mcp2515_deselect() {
-    gpio_put(MCP2515_CS_PIN, 1);
+static inline void cs_deselect() {
+    gpio_put(MCP2515_CS, 1);
 }
 
-uint8_t mcp2515_read_register(uint8_t address) {
-    uint8_t tx[] = { 0x03, address, 0x00 };
-    uint8_t rx[3];
-    mcp2515_select();
-    spi_write_read_blocking(MCP2515_SPI, tx, rx, 3);
-    mcp2515_deselect();
-    return rx[2];
+int can_init(void) {
+    spi_init(SPI_PORT1, SPI_BAUDRATE);
+    gpio_set_function(PIN_SCK, GPIO_FUNC_SPI);
+    gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
+    gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
+
+    gpio_init(MCP2515_CS);
+    gpio_set_dir(MCP2515_CS, true);
+    gpio_put(MCP2515_CS, 1);
+
+    // Reset MCP2515
+    cs_select();
+    uint8_t reset = 0xC0;
+    spi_write_blocking(SPI_PORT1, &reset, 1);
+    cs_deselect();
+
+    sleep_ms(100);
+
+    // Enter Config Mode
+    cs_select();
+    uint8_t config_mode[] = {0x02, REG_CANCTRL, 0x80};
+    spi_write_blocking(SPI_PORT1, config_mode, sizeof(config_mode));
+    cs_deselect();
+
+    // Read back REG_CANCTRL to verify
+    cs_select();
+    uint8_t read_cmd[] = {0x03, REG_CANCTRL, 0x00};
+    uint8_t resp[3] = {0};
+    spi_write_read_blocking(SPI_PORT1, read_cmd, resp, 3);
+    cs_deselect();
+
+    printf("REG_CANCTRL read-back = 0x%02X\n", resp[2]);
+
+    sleep_ms(2);
+
+    // Write CNF registers
+    cs_select();
+    uint8_t cnf3[] = {0x02, REG_CNF3, 0x02};
+    spi_write_blocking(SPI_PORT1, cnf3, sizeof(cnf3));
+    cs_deselect();
+
+    cs_select();
+    uint8_t cnf2[] = {0x02, REG_CNF2, 0x90};
+    spi_write_blocking(SPI_PORT1, cnf2, sizeof(cnf2));
+    cs_deselect();
+
+    cs_select();
+    uint8_t cnf1[] = {0x02, REG_CNF1, 0x03};
+    spi_write_blocking(SPI_PORT1, cnf1, sizeof(cnf1));
+    cs_deselect();
+
+    // Set RX buffers to accept all
+    cs_select();
+    uint8_t rxctrl0[] = {0x02, REG_RXBnCTRL(0), FLAG_RXM1 | FLAG_RXM0};
+    spi_write_blocking(SPI_PORT1, rxctrl0, sizeof(rxctrl0));
+    cs_deselect();
+
+    cs_select();
+    uint8_t rxctrl1[] = {0x02, REG_RXBnCTRL(1), FLAG_RXM1 | FLAG_RXM0};
+    spi_write_blocking(SPI_PORT1, rxctrl1, sizeof(rxctrl1));
+    cs_deselect();
+
+    // Enter Normal Mode
+    cs_select();
+    uint8_t normal_mode[] = {0x02, REG_CANCTRL, 0x00};
+    spi_write_blocking(SPI_PORT1, normal_mode, sizeof(normal_mode));
+    cs_deselect();
+
+    // Read CANSTAT
+    cs_select();
+    uint8_t tx[] = {0x03, REG_CANCTRL, 0x00};
+    uint8_t rx[3] = {0};
+    spi_write_read_blocking(SPI_PORT1, tx, rx, 3);
+    cs_deselect();
+
+    printf("CANSTAT = 0x%02X\n", rx[2]);
+    return 1;
 }
 
-void mcp2515_write_register(uint8_t address, uint8_t value) {
-    uint8_t tx[] = { 0x02, address, value };
-    mcp2515_select();
-    spi_write_blocking(MCP2515_SPI, tx, 3);
-    mcp2515_deselect();
-}
+void can_send(const can_frame_t* frame) {
+    printf("entered can_send()\n");
+    printf("preparing to execute cs_select()\n");
+    cs_select();
+    printf("executed cs_select()\n");
 
-void mcp2515_reset() {
-    uint8_t cmd = 0xC0; // comes from mcp2515 data sheet table 12-1
-    mcp2515_select();
-    spi_write_blocking(MCP2515_SPI, &cmd, 1);
-    mcp2515_deselect();
-    sleep_ms(10);
-    printf("[MCP2515] Reset issued\n");
-}
+    uint8_t buf[14] = {0};
+    buf[0] = 0x40; // LOAD TX BUFFER instruction (TXB0)
+    buf[1] = (frame->id >> 3) & 0xFF;
+    buf[2] = (frame->id & 0x07) << 5;
+    buf[3] = 0; // Extended ID = 0
+    buf[4] = 0; // Extended ID = 0
+    buf[5] = frame->dlc & 0x0F;
 
-bool mcp2515_configure_8mhz_500k(void) {
-    mcp2515_reset();
-
-    gpio_init(MCP2515_CS_PIN);
-	gpio_set_dir(MCP2515_CS_PIN, GPIO_OUT);
-	gpio_put(MCP2515_CS_PIN, 1);
-
-    // CNF1, CNF2, CNF3 calculated for 8 MHz clock and 500 kbps
-    // TQ = 8 * (BRP + 1) / Fosc = 8 * (1+1) / 8e6 = 2 us
-    // Bitrate = 1 / (TQ * total TQ count) = 1 / (2us * 8) = 500 kbps
-
-    mcp2515_write_register(0x2A, 0x00); // CNF1: SJW=1TQ, BRP=1
-    mcp2515_write_register(0x29, 0x90); // CNF2: BTLMODE=1, PHSEG1=4, PRSEG=1
-    mcp2515_write_register(0x28, 0x02); // CNF3: PHSEG2=3
-
-    mcp2515_write_register(0x0F, 0x00); // CANCTRL: Set to Normal mode
-
-    // Verify CANSTAT mode bits (bits 7-5 == 000 for normal)
-    uint8_t stat = mcp2515_read_register(0x0E);
-    if ((stat & 0xE0) == 0x00) {
-        printf("[MCP2515] Configured for 500kbps with 8MHz crystal\n");
-        return true;
-    } else {
-        printf("[MCP2515] Failed to enter normal mode, status=0x%02X\n", stat);
-        return false;
+    for (int i = 0; i < frame->dlc; i++) {
+        buf[6 + i] = frame->data[i];
     }
+
+    printf("preparing to run spi_write_blocking()\n");
+    spi_write_blocking(SPI_PORT1, buf, 6 + frame->dlc);
+    printf("executed spi_write_blocking()\n");
+    printf("preparing to cs_deselect()\n");
+    cs_deselect();
+    printf("executed cs_deselect()\n");
+
+    // Request to send TXB0
+    cs_select();
+    uint8_t rts = 0x81;
+    spi_write_blocking(SPI_PORT1, &rts, 1);
+    cs_deselect();
+    return;
 }
 
-bool mcp2515_configure_8mhz_250k(void) {
-    mcp2515_reset();
+bool can_receive(can_frame_t* frame) {
+    // Read CANINTF
+    cs_select();
+    uint8_t cmd[] = {0x03, REG_CANINTF, 0x00};
+    uint8_t resp[3] = {0};
+    spi_write_read_blocking(SPI_PORT1, cmd, resp, 3);
+    cs_deselect();
 
-    gpio_init(MCP2515_CS_PIN);
-	gpio_set_dir(MCP2515_CS_PIN, GPIO_OUT);
-	gpio_put(MCP2515_CS_PIN, 1);
+    uint8_t canintf = resp[2];
+//    printf("CANINTF register: 0x%02X\n", canintf);
 
-    // CNF1, CNF2, CNF3 for 8 MHz oscillator and 250 kbps bitrate
-    // Based on Microchip MCP2515 datasheet bit timing calculator
-    // TQ = 2us, 16 TQ per bit = 2us * 16 = 250kbps
-
-    mcp2515_write_register(0x2A, 0x00); // CNF1: SJW=1TQ, BRP=1
-    mcp2515_write_register(0x29, 0x90 | (6 << 3) | 3); // CNF2: BTLMODE=1, PHSEG1=6, PRSEG=2
-    mcp2515_write_register(0x28, 0x05); // CNF3: PHSEG2=6
-
-    uint8_t stat = mcp2515_read_register(0x0E);
-    printf("CANSTAT: 0x%02X (OPMODE = 0x%02X)\n", stat, stat & 0xE0);
-
-    mcp2515_write_register(0x0F, 0x00); // CANCTRL: Normal mode
-
-    stat = mcp2515_read_register(0x0E);
-    printf("CANSTAT: 0x%02X (OPMODE = 0x%02X)\n", stat, stat & 0xE0);
-
-    if ((stat & 0xE0) == 0x00) {
-        printf("[MCP2515] Configured for 250kbps with 8MHz crystal\n");
-        return true;
+    int rx_buf = -1;
+    if (canintf & FLAG_RXnIF(0)) {
+        rx_buf = 0;
+    } else if (canintf & FLAG_RXnIF(1)) {
+        rx_buf = 1;
     } else {
-        printf("[MCP2515] Failed to enter normal mode, status=0x%02X\n", stat);
-        return false;
+        return false; // No frame pending
     }
+
+    if (rx_buf >= 0) {
+        printf("Receiving from RX buffer %d\n", rx_buf);
+    }
+
+    uint8_t read_cmd = (rx_buf == 0) ? 0x90 : 0x94;
+
+    cs_select();
+    spi_write_blocking(SPI_PORT1, &read_cmd, 1);
+
+    uint8_t buf[13] = {0};
+    spi_read_blocking(SPI_PORT1, 0x00, buf, 13);
+    cs_deselect();
+
+    printf("Raw RX buffer data:");
+    for (int i = 0; i < 13; i++) {
+        printf(" %02X", buf[i]);
+    }
+    printf("\n");
+
+    frame->id = ((uint32_t)buf[0] << 3) | (buf[1] >> 5);
+    frame->dlc = buf[4] & 0x0F;
+    for (int i = 0; i < frame->dlc; i++) {
+        frame->data[i] = buf[5 + i];
+    }
+
+    printf("Received CAN Frame: ID=0x%lX DLC=%d Data:", frame->id, frame->dlc);
+    for (int i = 0; i < frame->dlc; i++) {
+        printf(" %02X", frame->data[i]);
+    }
+    printf("\n");
+
+    // Clear interrupt flag for that RX buffer
+    cs_select();
+    uint8_t clear_cmd[] = {0x05, REG_CANINTF, FLAG_RXnIF(rx_buf)};
+    spi_write_blocking(SPI_PORT1, clear_cmd, sizeof(clear_cmd));
+    cs_deselect();
+
+    return true;
 }

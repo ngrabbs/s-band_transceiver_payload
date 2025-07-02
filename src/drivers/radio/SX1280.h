@@ -25,17 +25,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-typedef struct
-{
-	uint32_t rf_freq;
-	int8_t  tx_power;
-	uint8_t  lora_sf;
-	uint8_t  band_width;
-	uint8_t  code_rate;
-	uint8_t	 payload_size;
-	
-}loRa_Para_t;
+#include "config.h"
 
 #define    IRQ_RADIO_NONE                         0x0000
 #define    IRQ_TX_DONE                            0x0001
@@ -263,8 +253,8 @@ class SX1280
 	
 public:
 	// Constructor.
-	SX1280(uint8_t NSS_Pin = 10, uint8_t NRESET_Pin = 9,uint8_t BUSY_Pin = 8,uint8_t DIO1_Pin = 7, uint8_t PIN_SCK = 2, uint8_t PIN_MOSI = 3, uint8_t PIN_MISO = 4);
-	bool Init(loRa_Para_t *lp_pt);
+	SX1280( void );
+	bool Init();
 	
 	void TxPacket(uint8_t *payload,uint8_t size);
 	uint8_t WaitForIRQ_TxDone(void);
@@ -279,7 +269,6 @@ public:
 	uint16_t *rxcnt_pt;
 	
 protected:
-	void SPI_Init(void);	// Initialise SPI. @note Use standard Arduino SPI interface
 	void Pin_Init(void);	//Initialise other pin.
 	uint8_t spi_rw(uint8_t value_w);
 	void CheckBusy(void);
@@ -317,14 +306,6 @@ protected:
 	void SetSaveContext( void );
 	void SX1280_Config(void);
 	
-private:
-	uint8_t SPI_NSS;	//output,SPI slave select pin
-	uint8_t RF_NRESET;	//output,hard reset of rf chip
-	uint8_t RF_BUSY;	//input
-	uint8_t RF_DIO1;	//input
-	uint8_t SPI_SCK;
-	uint8_t SPI_MOSI;
-	uint8_t SPI_MISO;
 	
 };
 

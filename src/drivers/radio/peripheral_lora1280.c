@@ -1,6 +1,5 @@
 #include "drivers/radio/peripheral_lora1280.h"
 #include "sx1280_wrapper.h"
-#include "lora_defs.h"
 #include <string.h>
 #include <stdio.h>
 #include "config.h"
