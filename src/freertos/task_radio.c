@@ -16,13 +16,12 @@ static void radio_task(void *pvParameters) {
     bool ok = radio_hal_init();
     printf("[RADIO_INIT] radio_hal_init returned: %s\n", ok ? "OK" : "FAIL");
 
-    // Generic defaults (safe starting values)
-    uint32_t last_freq = 915000000;    // Default frequency e.g. 915 MHz for RFM9x
-    uint8_t last_power = 10;           // Default power
-    uint8_t last_mod = 0x01;           // Default modulation: LoRa
-    uint32_t last_bw = 406000;         // Default bandwidth
-    uint8_t last_sf = 7;               // Default SF
-    uint8_t last_cr = 5;               // Default coding rate
+    uint32_t last_freq = 0;
+    uint8_t last_power = 0;
+    uint8_t last_mod = 0;
+    uint32_t last_bw = 0;
+    uint8_t last_sf = 0;
+    uint8_t last_cr = 0;
 
     for (;;) {
         radio_message_t msg;
@@ -68,7 +67,12 @@ static void radio_task(void *pvParameters) {
                         total_len = msg.body.payload.length + 4;
 
                         printf("[RADIO] Transmitting %zu bytes with RadioHead header.\n", total_len);
-                        radio_hal_transmit(tx_buf, total_len);
+                        // Check if radio is configured yet
+                        if (last_freq == 0) {
+                            printf("[RADIO] ERROR: Radio parameters not configured yet. Cannot transmit.\n");
+                        } else {
+                            radio_hal_transmit(tx_buf, total_len);
+                        }
                     }
                     break;
 

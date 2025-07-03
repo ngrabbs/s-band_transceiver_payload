@@ -11,7 +11,8 @@ void config_load_defaults(void) {
     sys_config.housekeeping_interval_ms = 10000;
     sys_config.can_poll_interval_ms     = 100;
     sys_config.radio_tx_interval_ms = 100;
-    sys_config.radio_type = RADIO_TYPE_RFM9X;
+//    sys_config.radio_type = RADIO_TYPE_RFM9X;
+    sys_config.radio_type = RADIO_TYPE_SX1280;
 
     // this spi works for the lora module on pico.
     // I dont know what it needs to be configured to
@@ -47,8 +48,8 @@ void config_load_defaults(void) {
     pin_config.i2c_scl = 11;
 
     // LoRa radio parameters
-    lora_config.rf_freq      = 2250050000;
-    lora_config.tx_power     = 0;
+    lora_config.rf_freq      = 2390000000;
+    lora_config.tx_power     = 10;
     lora_config.lora_sf      = 0x70; // SF7
     lora_config.band_width   = 0x34; // 200 kHz
     lora_config.code_rate    = 0x01; // 4/5

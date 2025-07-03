@@ -256,6 +256,8 @@ public:
 	SX1280( void );
 	bool Init();
 	
+	uint16_t ReadSyncWord(void);
+  void SetSyncWord(uint16_t syncWord);
 	void ConfigureFrequency(uint32_t freq_hz);
 	void ConfigurePower(int8_t power_dbm);
 	void ConfigureModulation(uint8_t packetType);

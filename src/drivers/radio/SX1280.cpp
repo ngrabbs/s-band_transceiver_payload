@@ -427,16 +427,34 @@ void SX1280::SetModulationParams(uint8_t sf, uint8_t bw, uint8_t cr)
     WriteCommand( RADIO_SET_MODULATIONPARAMS, buf, 3 );
 }
 
+void SX1280::SetSyncWord(uint16_t syncWord)
+{
+    uint8_t msb = (syncWord >> 8) & 0xFF;
+    uint8_t lsb = syncWord & 0xFF;
+
+    WriteRegister(0x09C0, msb);
+    WriteRegister(0x09C1, lsb);
+}
+
+uint16_t SX1280::ReadSyncWord(void)
+{
+    uint8_t msb = ReadRegister(0x09C0);
+    uint8_t lsb = ReadRegister(0x09C1);
+    return ((uint16_t)msb << 8) | lsb;
+}
+
 void SX1280::SetPacketParams(uint8_t payload_len)
 {
     uint8_t buf[7];
 
     //below parameter used in PACKET_TYPE_LORA or PACKET_TYPE_RANGING	
-	buf[0] = 12;	//PreambleLength;
+	//buf[0] = 12;	//PreambleLength;
+	buf[0] = 8;	//PreambleLength;
 	buf[1] = LORA_PACKET_VARIABLE_LENGTH;	//HeaderType;
 	buf[2] = payload_len;	//PayloadLength;
 	buf[3] = LORA_CRC_ON;	//CrcMode;
-	buf[4] = LORA_IQ_NORMAL;	//InvertIQ;
+//	buf[4] = LORA_IQ_NORMAL;	//InvertIQ;
+	buf[4] = LORA_IQ_INVERTED;	//InvertIQ;
 	buf[5] = 0;
 	buf[6] = 0;
 
@@ -633,6 +651,13 @@ void SX1280::SX1280_Config(void)
 	bw_temp = lora_config.band_width;
 	cr_temp = lora_config.code_rate;
 	size_temp = lora_config.payload_size;
+
+	printf("[SX1280 CONFIG] rf_freq_temp: %u Hz\n", rf_freq_temp);
+	printf("[SX1280 CONFIG] power_temp: %d dBm\n", power_temp);
+	printf("[SX1280 CONFIG] sf_temp: 0x%02X\n", sf_temp);
+	printf("[SX1280 CONFIG] bw_temp: 0x%02X\n", bw_temp);
+	printf("[SX1280 CONFIG] cr_temp: 0x%02X\n", cr_temp);
+	printf("[SX1280 CONFIG] size_temp: %u bytes\n", size_temp);
 	
 	SetRegulatorMode(USE_LDO);
 	SetStandby(STDBY_RC);//0:STDBY_RC; 1:STDBY_XOSC
@@ -644,6 +669,16 @@ void SX1280::SX1280_Config(void)
     SetTxParams(power_temp, RADIO_RAMP_02_US );
 	
 	SetPacketParams(size_temp);
+
+
+	uint16_t syncWord = ReadSyncWord();
+	printf("[SX1280 CONFIG] Sync Word Before Write = 0x%04X\n", syncWord);
+//	SetSyncWord(0x0012);
+	SetSyncWord(0x1424);
+	syncWord = ReadSyncWord();
+	printf("[SX1280 CONFIG] Sync Word After Write = 0x%04X\n", syncWord);
+
+
 	SetBufferBaseAddress( 0x00, 0x00 );
 }
 
