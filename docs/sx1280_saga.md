@@ -40,3 +40,8 @@ This is a working document to capture ongoing progress and troubleshooting steps
 - after we got the inversion right it looked like this, which is about 30k shifted
 ![FC32 Capture Screenshot](./captures/2390_MHz_sx1280_test-2_inverted.png)
 
+- corrected inversion, shifted up 30k, noticed the preamble is too long
+![FC32 Capture Screenshot](./captures/2390_MHz_sx1280_bad_preamble.png)
+
+- corrected preamble, started investigating sync word
+
