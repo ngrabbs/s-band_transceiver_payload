@@ -13,7 +13,7 @@ This document tracks all changes, experiments, and learnings related to getting 
 - Coding rates and register values
 - Sync word settings:
     - Default SX1280 sync word: 0x1424
-    [FC32 Capture Screenshot](./captures/915_MHz_lora_hat_good.png)
+    ![FC32 Capture Screenshot](./captures/915_MHz_lora_hat_good.png)
     - Experiments writing 0x0012 to registers 0x09C0 and 0x09C1
 - Preamble length differences:
     - SX1280 defaulting to ~14 chirps
