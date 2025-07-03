@@ -126,7 +126,7 @@ void can_send(const can_frame_t* frame) {
 }
 
 bool can_receive(can_frame_t* frame) {
-    // Read CANINTF
+    // Read CANINTF to check RX flags
     cs_select();
     uint8_t cmd[] = {0x03, REG_CANINTF, 0x00};
     uint8_t resp[3] = {0};
@@ -134,7 +134,6 @@ bool can_receive(can_frame_t* frame) {
     cs_deselect();
 
     uint8_t canintf = resp[2];
-//    printf("CANINTF register: 0x%02X\n", canintf);
 
     int rx_buf = -1;
     if (canintf & FLAG_RXnIF(0)) {
@@ -143,10 +142,6 @@ bool can_receive(can_frame_t* frame) {
         rx_buf = 1;
     } else {
         return false; // No frame pending
-    }
-
-    if (rx_buf >= 0) {
-        printf("Receiving from RX buffer %d\n", rx_buf);
     }
 
     uint8_t read_cmd = (rx_buf == 0) ? 0x90 : 0x94;
@@ -158,23 +153,11 @@ bool can_receive(can_frame_t* frame) {
     spi_read_blocking(SPI_PORT1, 0x00, buf, 13);
     cs_deselect();
 
-    printf("Raw RX buffer data:");
-    for (int i = 0; i < 13; i++) {
-        printf(" %02X", buf[i]);
-    }
-    printf("\n");
-
     frame->id = ((uint32_t)buf[0] << 3) | (buf[1] >> 5);
     frame->dlc = buf[4] & 0x0F;
     for (int i = 0; i < frame->dlc; i++) {
         frame->data[i] = buf[5 + i];
     }
-
-    printf("Received CAN Frame: ID=0x%lX DLC=%d Data:", frame->id, frame->dlc);
-    for (int i = 0; i < frame->dlc; i++) {
-        printf(" %02X", frame->data[i]);
-    }
-    printf("\n");
 
     // Clear interrupt flag for that RX buffer
     cs_select();
@@ -184,3 +167,63 @@ bool can_receive(can_frame_t* frame) {
 
     return true;
 }
+
+//  bool can_receive(can_frame_t* frame) {
+//     // Read CANINTF
+//     cs_select();
+//     uint8_t cmd[] = {0x03, REG_CANINTF, 0x00};
+//     uint8_t resp[3] = {0};
+//     spi_write_read_blocking(SPI_PORT1, cmd, resp, 3);
+//     cs_deselect();
+
+//     uint8_t canintf = resp[2];
+// //    printf("CANINTF register: 0x%02X\n", canintf);
+
+//     int rx_buf = -1;
+//     if (canintf & FLAG_RXnIF(0)) {
+//         rx_buf = 0;
+//     } else if (canintf & FLAG_RXnIF(1)) {
+//         rx_buf = 1;
+//     } else {
+//         return false; // No frame pending
+//     }
+
+//     if (rx_buf >= 0) {
+//         printf("Receiving from RX buffer %d\n", rx_buf);
+//     }
+
+//     uint8_t read_cmd = (rx_buf == 0) ? 0x90 : 0x94;
+
+//     cs_select();
+//     spi_write_blocking(SPI_PORT1, &read_cmd, 1);
+
+//     uint8_t buf[13] = {0};
+//     spi_read_blocking(SPI_PORT1, 0x00, buf, 13);
+//     cs_deselect();
+
+//     printf("Raw RX buffer data:");
+//     for (int i = 0; i < 13; i++) {
+//         printf(" %02X", buf[i]);
+//     }
+//     printf("\n");
+
+//     frame->id = ((uint32_t)buf[0] << 3) | (buf[1] >> 5);
+//     frame->dlc = buf[4] & 0x0F;
+//     for (int i = 0; i < frame->dlc; i++) {
+//         frame->data[i] = buf[5 + i];
+//     }
+
+//     printf("Received CAN Frame: ID=0x%lX DLC=%d Data:", frame->id, frame->dlc);
+//     for (int i = 0; i < frame->dlc; i++) {
+//         printf(" %02X", frame->data[i]);
+//     }
+//     printf("\n");
+
+//     // Clear interrupt flag for that RX buffer
+//     cs_select();
+//     uint8_t clear_cmd[] = {0x05, REG_CANINTF, FLAG_RXnIF(rx_buf)};
+//     spi_write_blocking(SPI_PORT1, clear_cmd, sizeof(clear_cmd));
+//     cs_deselect();
+
+//     return true;
+// }

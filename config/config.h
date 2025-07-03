@@ -14,12 +14,28 @@ typedef struct {
     uint8_t payload_size;
 } lora_params_t;
 
+typedef struct {
+    uint32_t rf_freq;
+    int8_t tx_power;
+    uint8_t lora_sf;
+    uint8_t band_width;
+    uint8_t code_rate;
+    uint8_t payload_size;
+} rfm9x_params_t;
+
+
+
+typedef enum {
+    RADIO_TYPE_SX1280 = 0,
+    RADIO_TYPE_RFM9X = 1
+} radio_type_t;
+
 // === Task Timings ===
 typedef struct {
     uint32_t housekeeping_interval_ms;
     uint32_t can_poll_interval_ms;
     uint32_t radio_tx_interval_ms;
-
+    radio_type_t radio_type;
 } sys_config_t;
 
 extern sys_config_t sys_config;
@@ -58,6 +74,7 @@ typedef struct {
 // Global configuration instances
 extern pin_config_t pin_config;
 extern lora_params_t lora_config;
+extern rfm9x_params_t rfm9x_config;
 extern sys_config_t sys_config;
 
 void config_load_defaults(void);

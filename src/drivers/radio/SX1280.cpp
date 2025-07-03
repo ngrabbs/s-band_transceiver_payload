@@ -647,7 +647,20 @@ void SX1280::SX1280_Config(void)
 	SetBufferBaseAddress( 0x00, 0x00 );
 }
 
+// Custom configuration methods added for CubeSat project
 
+void SX1280::ConfigureFrequency(uint32_t freq_hz) {
+    SetRfFrequency(freq_hz);
+}
 
+void SX1280::ConfigurePower(int8_t power_dbm) {
+    SetTxParams(power_dbm, RADIO_RAMP_02_US);
+}
 
+void SX1280::ConfigureModulation(uint8_t packetType) {
+    SetPacketType(packetType);
+}
 
+void SX1280::ConfigureModulationParams(uint8_t sf, uint8_t bw, uint8_t cr) {
+    SetModulationParams(sf, bw, cr);
+}

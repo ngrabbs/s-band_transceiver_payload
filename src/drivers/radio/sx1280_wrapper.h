@@ -31,6 +31,15 @@ bool sx1280_wait_tx_done(void);
  */
 void sx1280_reset(void);
 
+/**
+ * New configuration functions
+ */
+
+void sx1280_set_frequency(uint32_t freq_hz);
+void sx1280_set_power(uint8_t power_dbm);
+void sx1280_set_modulation(uint8_t packetType);
+void sx1280_set_modulation_params(uint8_t sf, uint8_t bw, uint8_t cr);
+
 #ifdef __cplusplus
 }
 #endif

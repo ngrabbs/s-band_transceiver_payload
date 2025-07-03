@@ -27,12 +27,15 @@ add_executable(${ProjectName}
     src/freertos/task_housekeeping.c
     src/drivers/spi/bus_config.c
     src/drivers/radio/peripheral_lora1280.c
+    src/drivers/radio/peripheral_rfm9x.c
     src/drivers/radio/sx1280_wrapper.cpp
     src/drivers/radio/SX1280.cpp
+    src/drivers/radio/radio_hal.c
     src/drivers/can/peripheral_mcp2515.c
     src/subsystems/housekeeping/housekeeping.c
     src/protocols/protocol_rf_command.c
     src/protocols/protocol_spacecan.c
+    src/protocols/spacecan_assembler.c
 )
 
 # Enable USB serial (set to 1 to enable)

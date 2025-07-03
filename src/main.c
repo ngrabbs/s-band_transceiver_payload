@@ -13,8 +13,6 @@ int main() {
 
     config_load_defaults();
     init_spi();
-//    init_canbus();
-
     message_queue_init();
     init_tasks();
     vTaskStartScheduler();

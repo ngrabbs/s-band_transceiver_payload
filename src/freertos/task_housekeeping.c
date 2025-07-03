@@ -16,25 +16,22 @@ void housekeeping_task(void *params) {
 
     while (1) {
         printf("[HOUSEKEEPING] Collecting system data... every %lums\n", sys_config.housekeeping_interval_ms);
-        uint8_t beacon_frame[16];
+
+        uint8_t beacon_frame[64];
         hk_telemetry_t hk = collect_housekeeping_data();
         size_t len = protocol_spacecan_format_beacon(beacon_frame, sizeof(beacon_frame), &hk);
 
-        // Wrap the payload in message_t
-        message_t msg;
-        msg.length = len;
-        memcpy(msg.data, beacon_frame, msg.length);
+        radio_message_t msg;
+        msg.type = RADIO_MSG_SEND_DATA;
+        msg.body.payload.length = len;
+        memcpy(msg.body.payload.data, beacon_frame, len);
         message_queue_send(&msg);
-
-        printf("[HK] Temp %.2fC, Uptime: %lums, Free Heap: %u, Tasks: %d\n",
-            hk.temperature_c, hk.uptime_ms, (unsigned)hk.heap_free_bytes, hk.task_count);
 
         printf("[SPACECAN] Beacon payload (%zu bytes): ", len);
         for (size_t i = 0; i < len; ++i) {
             printf("%02X ", beacon_frame[i]);
         }
         printf("\n");
-
 
         vTaskDelay(pdMS_TO_TICKS(sys_config.housekeeping_interval_ms));
     }

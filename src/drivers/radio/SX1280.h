@@ -256,6 +256,10 @@ public:
 	SX1280( void );
 	bool Init();
 	
+	void ConfigureFrequency(uint32_t freq_hz);
+	void ConfigurePower(int8_t power_dbm);
+	void ConfigureModulation(uint8_t packetType);
+	void ConfigureModulationParams(uint8_t sf, uint8_t bw, uint8_t cr);
 	void TxPacket(uint8_t *payload,uint8_t size);
 	uint8_t WaitForIRQ_TxDone(void);
 	void RxBufferInit(uint8_t *rxpayload,uint16_t *rx_size);

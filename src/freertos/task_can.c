@@ -3,6 +3,8 @@
 #include "task.h"
 #include "pico/stdlib.h"
 #include "drivers/can/peripheral_mcp2515.h"
+#include "protocols/protocol_spacecan.h"
+#include "protocols/spacecan_assembler.h"
 #include "hardware/spi.h"
 #include <stdio.h>
 
@@ -24,20 +26,8 @@ void can_task(void *params)
     while (1)
     {
         can_frame_t frame;
-        if (can_receive(&frame))
-        {
-            printf("Received CAN Frame: ID=0x%lX DLC=%d Data:", frame.id, frame.dlc);
-            for (int i = 0; i < frame.dlc; i++)
-            {
-                printf(" %02X", frame.data[i]);
-            }
-            printf("\n");
-        }
-        int quit = getchar_timeout_us(0);
-        if (quit == 'q')
-        {
-            printf("Exiting CAN Receive Mode.\n");
-            break;
+        if (can_receive(&frame)) {
+            spacecan_assembler_handle(&frame);
         }
         sleep_ms(10);
         vTaskDelay(pdMS_TO_TICKS(500));
