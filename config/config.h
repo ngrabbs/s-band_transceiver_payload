@@ -7,22 +7,13 @@
 // === LoRa parameters ===
 typedef struct {
     uint32_t rf_freq;
-    int8_t tx_power;
-    uint8_t lora_sf;
-    uint8_t band_width;
-    uint8_t code_rate;
-    uint8_t payload_size;
-} lora_params_t;
-
-typedef struct {
-    uint32_t rf_freq;
-    int8_t tx_power;
-    uint8_t lora_sf;
-    uint8_t band_width;
-    uint8_t code_rate;
-    uint8_t payload_size;
-} rfm9x_params_t;
-
+    uint8_t  tx_power;
+    uint8_t  modulation;
+    uint8_t  lora_sf;
+    uint8_t  band_width;
+    uint8_t  code_rate;
+    uint8_t  payload_size;
+} radio_config_t;
 
 
 typedef enum {
@@ -73,10 +64,9 @@ typedef struct {
 
 // Global configuration instances
 extern pin_config_t pin_config;
-extern lora_params_t lora_config;
-extern rfm9x_params_t rfm9x_config;
 extern sys_config_t sys_config;
 
+radio_config_t get_active_radio_config(void);
 void config_load_defaults(void);
 
 #endif

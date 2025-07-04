@@ -257,6 +257,7 @@ public:
 	bool Init();
 	
 	uint16_t ReadSyncWord(void);
+	void SetSfDependentReg(uint8_t sf);
   void SetSyncWord(uint16_t syncWord);
 	void ConfigureFrequency(uint32_t freq_hz);
 	void ConfigurePower(int8_t power_dbm);

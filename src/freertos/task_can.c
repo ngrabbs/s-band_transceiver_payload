@@ -7,16 +7,17 @@
 #include "protocols/spacecan_assembler.h"
 #include "hardware/spi.h"
 #include <stdio.h>
+#include "debug.h"
 
 #define MCP2515_SPI spi0
 
 void can_task(void *params)
 {
-    printf("[CAN TASK] Starting CAN task...\n");
+    DEBUG_INFO("[CAN TASK] Starting CAN task...\n");
 
     if (!can_init())
     {
-        printf("[CAN TASK] MCP2515 config failed\n");
+        DEBUG_ERROR("[CAN TASK] MCP2515 config failed\n");
         while (1)
         {
             vTaskDelay(pdMS_TO_TICKS(1000));

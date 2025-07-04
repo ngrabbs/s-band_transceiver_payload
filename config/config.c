@@ -3,12 +3,12 @@
 
 // Global instances
 pin_config_t pin_config;
-lora_params_t lora_config;
-rfm9x_params_t rfm9x_config;
+radio_config_t lora_config;
+radio_config_t rfm9x_config;
 sys_config_t sys_config;
 
 void config_load_defaults(void) {
-    sys_config.housekeeping_interval_ms = 10000;
+    sys_config.housekeeping_interval_ms = 1000;
     sys_config.can_poll_interval_ms     = 100;
     sys_config.radio_tx_interval_ms = 100;
 //    sys_config.radio_type = RADIO_TYPE_RFM9X;
@@ -50,6 +50,7 @@ void config_load_defaults(void) {
     // LoRa radio parameters
     lora_config.rf_freq      = 2390000000;
     lora_config.tx_power     = 10;
+    lora_config.modulation   = 0x01; // Lora
     lora_config.lora_sf      = 0x70; // SF7
     lora_config.band_width   = 0x34; // 200 kHz
     lora_config.code_rate    = 0x01; // 4/5
@@ -58,8 +59,22 @@ void config_load_defaults(void) {
         // LoRa radio parameters
     rfm9x_config.rf_freq      = 915000000;
     rfm9x_config.tx_power     = 15;
+    rfm9x_config.modulation   = 0x01; // Lora
     rfm9x_config.lora_sf      = 0x70; // SF7
     rfm9x_config.band_width   = 0x08; // 250Khz = 0x08, 125 = 0x07
     rfm9x_config.code_rate    = 0x01; // 4/5
     rfm9x_config.payload_size = 64;
+}
+
+radio_config_t get_active_radio_config(void) {
+    switch(sys_config.radio_type) {
+        case RADIO_TYPE_RFM9X:
+            return rfm9x_config;
+        case RADIO_TYPE_SX1280:
+            return lora_config;
+        default:
+            // Provide safe defaults or log error
+            radio_config_t empty = {0};
+            return empty;
+    }
 }

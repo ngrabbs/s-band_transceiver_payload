@@ -427,6 +427,18 @@ void SX1280::SetModulationParams(uint8_t sf, uint8_t bw, uint8_t cr)
     WriteCommand( RADIO_SET_MODULATIONPARAMS, buf, 3 );
 }
 
+void SX1280::SetSfDependentReg(uint8_t sf) {
+    uint8_t reg_value = 0x32; // default for SF9+
+
+    if(sf <= 6) {
+        reg_value = 0x1E;
+    } else if(sf <= 8) {
+        reg_value = 0x37;
+    }
+
+    WriteRegister(0x0925, reg_value);
+}
+
 void SX1280::SetSyncWord(uint16_t syncWord)
 {
     uint8_t msb = (syncWord >> 8) & 0xFF;
@@ -440,6 +452,14 @@ uint16_t SX1280::ReadSyncWord(void)
 {
     uint8_t msb = ReadRegister(0x09C0);
     uint8_t lsb = ReadRegister(0x09C1);
+
+		printf("[SX1280] Sync Word read MSB: 0x%02X, LSB: 0x%02X\n", msb, lsb);
+
+		msb = ReadRegister(0x0944);
+  	lsb = ReadRegister(0x0945);
+
+		printf("[SX1280] Sync Word read MSB: 0x%02X, LSB: 0x%02X\n", msb, lsb);
+
     return ((uint16_t)msb << 8) | lsb;
 }
 
@@ -449,7 +469,7 @@ void SX1280::SetPacketParams(uint8_t payload_len)
 
     //below parameter used in PACKET_TYPE_LORA or PACKET_TYPE_RANGING	
 	//buf[0] = 12;	//PreambleLength;
-	buf[0] = 8;	//PreambleLength;
+	buf[0] = 6;	//PreambleLength;
 	buf[1] = LORA_PACKET_VARIABLE_LENGTH;	//HeaderType;
 	buf[2] = payload_len;	//PayloadLength;
 	buf[3] = LORA_CRC_ON;	//CrcMode;
@@ -665,6 +685,9 @@ void SX1280::SX1280_Config(void)
 	
 	SetModulationParams(sf_temp,bw_temp,cr_temp);
 
+	// This is new -Nick 
+	SetSfDependentReg(sf_temp);
+
     SetRfFrequency( rf_freq_temp );
     SetTxParams(power_temp, RADIO_RAMP_02_US );
 	
@@ -674,7 +697,7 @@ void SX1280::SX1280_Config(void)
 	uint16_t syncWord = ReadSyncWord();
 	printf("[SX1280 CONFIG] Sync Word Before Write = 0x%04X\n", syncWord);
 //	SetSyncWord(0x0012);
-	SetSyncWord(0x1424);
+//	SetSyncWord(0x1424);
 	syncWord = ReadSyncWord();
 	printf("[SX1280 CONFIG] Sync Word After Write = 0x%04X\n", syncWord);
 
