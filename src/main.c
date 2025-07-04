@@ -10,6 +10,7 @@
 int main() {
     stdio_init_all();
     sleep_ms(5000);
+    printf("test start\n");
 
     config_load_defaults();
     init_spi();

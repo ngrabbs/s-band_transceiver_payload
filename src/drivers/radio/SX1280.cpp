@@ -41,7 +41,8 @@ The TCXO is 32MHz, so the frequency step should be FREQ_STEP = 52e6 / (2^18) Hz
 */
 #define FREQ_STEP    198.364
 
-static spi_inst_t *radio_spi = pin_config.spi_bus0; // or spi1 if you're using that
+static spi_inst_t *radio_spi = spi0; // or spi1 if you're using that
+//static spi_inst_t *radio_spi = pin_config.spi_bus0; // or spi1 if you're using that
 
 SX1280::SX1280(){}
 

@@ -71,11 +71,11 @@ static void radio_task(void *pvParameters) {
 
                         printf("[RADIO] Transmitting %zu bytes with RadioHead header.\n", total_len);
                         // Check if radio is configured yet
-                        if (last_freq == 0) {
-                            printf("[RADIO] ERROR: Radio parameters not configured yet. Cannot transmit.\n");
-                        } else {
+//                        if (last_freq == 0) {
+ //                           printf("[RADIO] ERROR: Radio parameters not configured yet. Cannot transmit.\n");
+  //                      } else {
                             radio_hal_transmit(tx_buf, total_len);
-                        }
+   //                     }
                     }
                     break;
 
