@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "core/message_queue.h"
 #include "config.h"
+#include "debug.h"
 
 #define RADIO_TASK_STACK_SIZE 512
 #define RADIO_TASK_PRIORITY   (tskIDLE_PRIORITY + 2)
@@ -14,7 +15,7 @@
 static void radio_task(void *pvParameters) {
 
     bool ok = radio_hal_init();
-    printf("[RADIO_INIT] radio_hal_init returned: %s\n", ok ? "OK" : "FAIL");
+    DEBUG_INFO("[RADIO_INIT] radio_hal_init returned: %s\n", ok ? "OK" : "FAIL");
 
     uint32_t last_freq = 0;
     uint8_t last_power = 0;
@@ -32,20 +33,22 @@ static void radio_task(void *pvParameters) {
                 case RADIO_MSG_CONFIGURE:
                     printf("[RADIO] CONFIGURE message received.\n");
 
-                    // Apply new config if set
-                    last_freq = msg.body.config.frequency_hz;
-                    last_power = msg.body.config.power_dbm;
-                    last_mod = msg.body.config.modulation;
-                    last_bw = msg.body.config.bandwidth_hz;
-                    last_sf = msg.body.config.spreading_factor;
-                    last_cr = msg.body.config.coding_rate;
+                    // Build updated config
+                    radio_config_t new_cfg = get_active_radio_config();
+                    new_cfg.rf_freq = msg.body.config.frequency_hz;
+                    new_cfg.tx_power = msg.body.config.power_dbm;
+                    new_cfg.modulation = msg.body.config.modulation;
+                    new_cfg.band_width = msg.body.config.bandwidth_hz;
+                    new_cfg.lora_sf = msg.body.config.spreading_factor;
+                    new_cfg.code_rate = msg.body.config.coding_rate;
 
-                    radio_hal_set_frequency(last_freq);
-                    radio_hal_set_power(last_power);
-                    radio_hal_set_modulation(last_mod);
-                    radio_hal_set_bandwidth(last_bw);
-                    radio_hal_set_spreading_factor(last_sf);
-                    radio_hal_set_coding_rate(last_cr);
+                    // Save back to active config
+                    set_active_radio_config(&new_cfg);
+
+                    // Re-initialize hardware with new config
+                    bool ok = radio_hal_init();
+                    DEBUG_INFO("[RADIO_INIT] radio_hal_init returned after CONFIGURE: %s\n", ok ? "OK" : "FAIL");
+
 
                     break;
 

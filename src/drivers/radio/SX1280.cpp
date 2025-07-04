@@ -24,7 +24,10 @@
 #include "SX1280.h"
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
-#include "config.h"
+
+extern "C" {
+    #include "config.h"
+}
 
 #define SPI_NSS_LOW()  gpio_put(SPI_NSS, 0)
 #define SPI_NSS_HIGH() gpio_put(SPI_NSS, 1)
@@ -38,7 +41,7 @@ The TCXO is 32MHz, so the frequency step should be FREQ_STEP = 52e6 / (2^18) Hz
 */
 #define FREQ_STEP    198.364
 
-static spi_inst_t *radio_spi = spi0; // or spi1 if you're using that
+static spi_inst_t *radio_spi = pin_config.spi_bus0; // or spi1 if you're using that
 
 SX1280::SX1280(){}
 
@@ -658,40 +661,29 @@ uint8_t SX1280::WaitForIRQ_RxDone(void)
 
 void SX1280::SX1280_Config(void)
 {
-	uint32_t rf_freq_temp;
-	int8_t power_temp;
-	uint8_t sf_temp;
-	uint8_t bw_temp;
-	uint8_t cr_temp;
-	uint8_t size_temp;
-	
-	rf_freq_temp = lora_config.rf_freq;
-	power_temp = lora_config.tx_power;
-	sf_temp = lora_config.lora_sf;
-	bw_temp = lora_config.band_width;
-	cr_temp = lora_config.code_rate;
-	size_temp = lora_config.payload_size;
 
-	printf("[SX1280 CONFIG] rf_freq_temp: %u Hz\n", rf_freq_temp);
-	printf("[SX1280 CONFIG] power_temp: %d dBm\n", power_temp);
-	printf("[SX1280 CONFIG] sf_temp: 0x%02X\n", sf_temp);
-	printf("[SX1280 CONFIG] bw_temp: 0x%02X\n", bw_temp);
-	printf("[SX1280 CONFIG] cr_temp: 0x%02X\n", cr_temp);
-	printf("[SX1280 CONFIG] size_temp: %u bytes\n", size_temp);
+	radio_config_t cfg = get_active_radio_config();
+
+	printf("[SX1280 CONFIG] rf_freq_temp: %u Hz\n", cfg.rf_freq);
+	printf("[SX1280 CONFIG] power_temp: %d dBm\n", cfg.tx_power);
+	printf("[SX1280 CONFIG] sf_temp: 0x%02X\n", cfg.lora_sf);
+	printf("[SX1280 CONFIG] bw_temp: 0x%02X\n", cfg.band_width);
+	printf("[SX1280 CONFIG] cr_temp: 0x%02X\n", cfg.code_rate);
+	printf("[SX1280 CONFIG] payload_size: %d\n", cfg.payload_size);
 	
 	SetRegulatorMode(USE_LDO);
 	SetStandby(STDBY_RC);//0:STDBY_RC; 1:STDBY_XOSC
 	SetPacketType(PACKET_TYPE_LORA);
 	
-	SetModulationParams(sf_temp,bw_temp,cr_temp);
+	SetModulationParams(cfg.lora_sf, cfg.band_width, cfg.code_rate);
 
 	// This is new -Nick 
-	SetSfDependentReg(sf_temp);
+	SetSfDependentReg(cfg.lora_sf);
 
-    SetRfFrequency( rf_freq_temp );
-    SetTxParams(power_temp, RADIO_RAMP_02_US );
+    SetRfFrequency( cfg.rf_freq );
+    SetTxParams(cfg.tx_power, RADIO_RAMP_02_US );
 	
-	SetPacketParams(size_temp);
+	SetPacketParams(cfg.payload_size);
 
 
 	uint16_t syncWord = ReadSyncWord();

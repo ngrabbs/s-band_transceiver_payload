@@ -1,6 +1,10 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include "hardware/spi.h"
 
@@ -68,5 +72,10 @@ extern sys_config_t sys_config;
 
 radio_config_t get_active_radio_config(void);
 void config_load_defaults(void);
+void set_active_radio_config(const radio_config_t* new_cfg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

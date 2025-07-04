@@ -29,91 +29,14 @@ uint8_t spi_read_register(uint8_t addr) {
     spi_write_read_blocking(pin_config.spi_bus0, tx, rx, 2);
     spi_cs_deselect(pin_config.cs_lora);
 
-//    printf("[DEBUG] SPI READ tx: %02X %02X | rx: %02X %02X\n", tx[0], tx[1], rx[0], rx[1]);
+    printf("[DEBUG] SPI READ tx: %02X %02X | rx: %02X %02X\n", tx[0], tx[1], rx[0], rx[1]);
 
     return rx[1];
 }
 
-/*
 bool rfm9x_init(void) {
     printf("[RFM9x] init\n");
-
-    gpio_init(pin_config.cs_lora);
-    gpio_set_dir(pin_config.cs_lora, GPIO_OUT);
-    gpio_put(pin_config.cs_lora, 1);
-    printf("[RFM9x] pin set done\n");
-
-    // SPI sanity check
-    uint8_t version = spi_read_register(0x42);
-    printf("[RFM9x] RegVersion = 0x%02X %d\n", version, version);
-
-    if (version == 0x12) {
-        printf("[RFM9x] SPI OK!\n");
-    } else {
-        printf("[RFM9x] SPI FAILURE - check wiring or power!\n");
-        return false;
-    }
-
-    // Put RFM9x into sleep mode
-    spi_write_register(0x01, 0x00); // sleep mode
-
-    sleep_ms(10);
-
-    // Set LoRa mode (must be in sleep)
-    spi_write_register(0x01, 0x80); // LoRa + sleep
-
-    // Go to standby
-    spi_write_register(0x01, 0x81);
-
-    // Set frequency to 915 MHz
-    // Python driver uses frf = 0xE4C000
-    spi_write_register(0x06, 0xE4); // RegFrMsb
-    spi_write_register(0x07, 0xC0); // RegFrMid
-    spi_write_register(0x08, 0x00); // RegFrLsb
-
-    // Configure PA_BOOST, power level
-    // Equivalent to PAConfig writes seen in Python:
-    // e.g. PA_BOOST, output_power bits = max
-    spi_write_register(0x09, 0xCF); // RegPaConfig = PA_BOOST + MaxPower + 15 dBm
-
-    // Over-current protection (default 0x2B)
-    spi_write_register(0x0B, 0x2B);
-
-    // LNA gain (default boost on)
-    spi_write_register(0x0C, 0x23);
-
-    // Configure modem settings
-    // Python defaults: BW=125 kHz, CR=4/5, Explicit header, SF7
-    spi_write_register(0x1D, 0x72); // RegModemConfig1
-    spi_write_register(0x1E, 0x74); // RegModemConfig2
-
-    // Preamble length = 8 bytes
-    spi_write_register(0x20, 0x00);
-    spi_write_register(0x21, 0x08);
-
-    // Sync word = 0x12 (LoRa default)
-    spi_write_register(0x39, 0x12);
-
-    // Set maximum payload length
-    spi_write_register(0x23, 0xFF);
-
-    // Put device back in standby
-    spi_write_register(0x01, 0x81);
-
-    // Read back RegOpMode to verify
-    uint8_t op_mode = spi_read_register(0x01);
-    printf("[RFM9x] RegOpMode read-back = 0x%02X\n", op_mode);
-
-    rfm9x_check_and_disable_whitening();
-
-    printf("[RFM9x] basic registers configured\n");
-    printf("[RFM9x] end init()\n");
-    return true;
-}
-    */
-
-bool rfm9x_init(void) {
-    printf("[RFM9x] init\n");
+    radio_config_t current_config = get_active_radio_config();
 
     gpio_init(pin_config.cs_lora);
     gpio_set_dir(pin_config.cs_lora, GPIO_OUT);
@@ -140,20 +63,20 @@ bool rfm9x_init(void) {
     spi_write_register(0x01, 0x81);
 
     // Set frequency
-    rfm9x_set_frequency(rfm9x_config.rf_freq);
+    rfm9x_set_frequency(current_config.rf_freq);
 
     // Set preamble length = 8
     spi_write_register(0x20, 0x00);
     spi_write_register(0x21, 0x08);
 
     // Set bandwidth
-    rfm9x_set_bandwidth(rfm9x_config.band_width);
+    rfm9x_set_bandwidth(current_config.band_width);
 
     // Set coding rate
-    rfm9x_set_coding_rate(rfm9x_config.code_rate);
+    rfm9x_set_coding_rate(current_config.code_rate);
 
     // Set spreading factor
-    rfm9x_set_spreading_factor(rfm9x_config.lora_sf);
+    rfm9x_set_spreading_factor(current_config.lora_sf);
 
     // Enable CRC
     uint8_t modem_cfg_2 = spi_read_register(0x1E);
@@ -164,7 +87,7 @@ bool rfm9x_init(void) {
     spi_write_register(0x26, 0x00);
 
     // Set transmit power
-    rfm9x_set_power(rfm9x_config.tx_power);
+    rfm9x_set_power(current_config.tx_power);
 
     // Additional errata/low-level settings
     spi_write_register(0x4D, 0x84);

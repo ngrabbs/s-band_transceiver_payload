@@ -13,7 +13,7 @@ extern "C" {
  * Initialize the SX1280 radio with the specified parameters.
  * Returns true on success.
  */
-bool sx1280_init(const lora_params_t* params);
+bool sx1280_init(void);
 
 /**
  * Transmit a raw buffer over LoRa.
